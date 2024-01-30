@@ -42,22 +42,17 @@ local updateInterval = 1 -- seconds, adjust as needed
 
 local function MarkTankTarget()
     if UnitIsPlayer("target") or not UnitIsEnemy("player", "target") then
-        --print("RSI: Target is a player or not an enemy.")
         return -- Ensures the target is a hostile NPC
     end
 
     if GetRaidTargetIndex("target") ~= skullMarker then
-        --print("RSI: Marking target with a skull.")
         SetRaidTarget("target", skullMarker)
         markerSet = true
-    else
-        --print("RSI: Target is already marked with a skull.")
     end
 end
 
 -- In the UpdateTankMark function
 local function UpdateTankMark(self, elapsed)
-    print("UpdateTankMark called")
     lastTargetChangeTime = lastTargetChangeTime + elapsed
     if lastTargetChangeTime < updateInterval then return end
     lastTargetChangeTime = 0
@@ -65,18 +60,16 @@ local function UpdateTankMark(self, elapsed)
     local inInstance, instanceType = IsInInstance()
     local inSmallGroup = IsInGroup() and GetNumGroupMembers() <= 5
 
-    print("In instance: " .. tostring(inInstance))
-    print("In small group: " .. tostring(inSmallGroup))
-    print("Skull marking enabled: " .. tostring(RSI.skullMarkingEnabled))
+    --print("In instance: " .. tostring(inInstance))
+    --print("In small group: " .. tostring(inSmallGroup))
+    --print("Skull marking enabled: " .. tostring(RSI.skullMarkingEnabled))
 
     if not inInstance and inSmallGroup and RSI.skullMarkingEnabled then
         if UnitGUID("target") ~= tankTarget then
             tankTarget = UnitGUID("target")
             markerSet = false
-            print("New target acquired. Marking needed.")
         elseif not markerSet and tankTarget then
             MarkTankTarget()
-            print("Marking target with a skull.")
         end
     end
 end
