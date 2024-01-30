@@ -1,6 +1,6 @@
 -- Core.lua
 
--- Initialize RSI if it doesn't exist
+--- Initialize RSI if it doesn't exist
 RSI = RSI or {}
 
 -- Initialize the enabled state from the saved variable or default to true
@@ -9,6 +9,7 @@ if RSISkullEnabled == nil then
 end
 RSI.skullMarkingEnabled = RSISkullEnabled
 
+-- Create the RSIFrame here
 local RSIFrame = CreateFrame("Frame", "RhodansMarkersFrame", UIParent)
 
 -- Function to toggle the skull marking feature
@@ -54,21 +55,42 @@ local function MarkTankTarget()
     end
 end
 
+-- In the UpdateTankMark function
 local function UpdateTankMark(self, elapsed)
+    print("UpdateTankMark called")
     lastTargetChangeTime = lastTargetChangeTime + elapsed
     if lastTargetChangeTime < updateInterval then return end
-
     lastTargetChangeTime = 0
 
-    if RSI.skullMarkingEnabled and GetSpecializationRole(GetSpecialization()) == "TANK" then
+    local inInstance, instanceType = IsInInstance()
+    local inSmallGroup = IsInGroup() and GetNumGroupMembers() <= 5
+
+    print("In instance: " .. tostring(inInstance))
+    print("In small group: " .. tostring(inSmallGroup))
+    print("Skull marking enabled: " .. tostring(RSI.skullMarkingEnabled))
+
+    if not inInstance and inSmallGroup and RSI.skullMarkingEnabled then
         if UnitGUID("target") ~= tankTarget then
             tankTarget = UnitGUID("target")
             markerSet = false
+            print("New target acquired. Marking needed.")
         elseif not markerSet and tankTarget then
             MarkTankTarget()
+            print("Marking target with a skull.")
         end
     end
 end
+
+
+-- Now you can set the elapsed property and OnUpdate script
+RSIFrame.elapsed = 0
+RSIFrame:SetScript("OnUpdate", function(self, elapsed)
+    self.elapsed = self.elapsed + elapsed
+    if self.elapsed >= updateInterval then
+        UpdateTankMark(self, self.elapsed)
+        self.elapsed = 0
+    end
+end)
 
 -- Event handling function
 RSIFrame:SetScript("OnEvent", function(self, event, ...)
