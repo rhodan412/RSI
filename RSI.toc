@@ -1,7 +1,7 @@
 ## Interface: 102005
 ## Title: Rhodan's Skull It
 ## Notes: Automatically marks tank's target in 5 player dungeon
-## Author: Aurleis
+## Author: Rhodan {Aurleis}
 ## Version: 1.0
 ## IconTexture: Interface\AddOns\RSI\rhodan.tga
 

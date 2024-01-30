@@ -1,6 +1,6 @@
 All Rights Reserved
 
-Copyright (c) Rhodan's Skull It by Rhodan
+Copyright (c) Rhodan's Skull It by Rhodan {Aurleis}
 
 Created by Techcable
 
