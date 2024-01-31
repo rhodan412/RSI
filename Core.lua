@@ -58,13 +58,11 @@ local function UpdateTankMark(self, elapsed)
     lastTargetChangeTime = 0
 
     local inInstance, instanceType = IsInInstance()
+    local isPartyLeader = UnitIsGroupLeader("player")
     local inSmallGroup = IsInGroup() and GetNumGroupMembers() <= 5
 
-    --print("In instance: " .. tostring(inInstance))
-    --print("In small group: " .. tostring(inSmallGroup))
-    --print("Skull marking enabled: " .. tostring(RSI.skullMarkingEnabled))
-
-    if not inInstance and inSmallGroup and RSI.skullMarkingEnabled then
+    -- Check if outside of instances, in a small group, the skull marking is enabled, and the player is the party leader
+    if not inInstance and inSmallGroup and RSI.skullMarkingEnabled and isPartyLeader then
         if UnitGUID("target") ~= tankTarget then
             tankTarget = UnitGUID("target")
             markerSet = false
@@ -73,6 +71,7 @@ local function UpdateTankMark(self, elapsed)
         end
     end
 end
+
 
 
 -- Now you can set the elapsed property and OnUpdate script
