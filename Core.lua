@@ -1,5 +1,10 @@
 -- Core.lua
 
+
+------------------------------------------
+-- 1. Global Declarations
+------------------------------------------
+
 --- Initialize RSI if it doesn't exist
 RSI = RSI or {}
 
@@ -11,6 +16,11 @@ RSI.skullMarkingEnabled = RSISkullEnabled
 
 -- Create the RSIFrame here
 local RSIFrame = CreateFrame("Frame", "RhodansMarkersFrame", UIParent)
+
+
+------------------------------------------
+-- 2. Utility Functions
+------------------------------------------
 
 -- Function to toggle the skull marking feature
 local function ToggleSkullMarking(state)
@@ -27,11 +37,21 @@ local function ToggleSkullMarking(state)
     end
 end
 
+
+------------------------------------------
+-- 3. Slash Command Registration
+------------------------------------------
+
 -- Register the slash command
 SLASH_RSISKULL1 = "/RSI"
 SlashCmdList["RSISKULL"] = function(msg)
     ToggleSkullMarking(msg:lower())
 end
+
+
+------------------------------------------
+-- 4. Target Tracking and Marking Logic
+------------------------------------------
 
 local tankTarget
 local lastTargetChangeTime = 0
@@ -40,6 +60,7 @@ local markerSet = false
 local updateInterval = 1 -- seconds, adjust as needed
 
 
+-- Function for handling marking of specific target
 local function MarkTankTarget()
     if UnitIsPlayer("target") or not UnitIsEnemy("player", "target") then
         return -- Ensures the target is a hostile NPC
@@ -50,6 +71,7 @@ local function MarkTankTarget()
         markerSet = true
     end
 end
+
 
 -- In the UpdateTankMark function
 local function UpdateTankMark(self, elapsed)
@@ -73,6 +95,9 @@ local function UpdateTankMark(self, elapsed)
 end
 
 
+------------------------------------------
+-- 5. Frame and Event Handling
+------------------------------------------
 
 -- Now you can set the elapsed property and OnUpdate script
 RSIFrame.elapsed = 0
@@ -83,6 +108,11 @@ RSIFrame:SetScript("OnUpdate", function(self, elapsed)
         self.elapsed = 0
     end
 end)
+
+
+------------------------------------------
+-- 6. Event Registration
+------------------------------------------
 
 -- Event handling function
 RSIFrame:SetScript("OnEvent", function(self, event, ...)
@@ -97,6 +127,7 @@ RSIFrame:SetScript("OnEvent", function(self, event, ...)
         end
     end
 end)
+
 
 -- Register events
 RSIFrame:RegisterEvent("ADDON_LOADED")
