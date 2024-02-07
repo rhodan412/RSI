@@ -1,1 +1,3 @@
+1.1 - Tank will mark priority targets automatically in dungeons as tank role priority and secondarily as tank spec
+
 1.0 - Initial Release
