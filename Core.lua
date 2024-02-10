@@ -71,7 +71,6 @@ end
 ------------------------------------------
 
 local tankTarget
-local lastTargetChangeTime = 0
 local skullMarker = 8
 local markerSet = false
 local updateInterval = 1 -- seconds, adjust as needed
@@ -96,9 +95,12 @@ end
 
 -- In the UpdateTankMark function
 local function UpdateTankMark(self, elapsed)
+	timeSinceLastTargetChange = 0
+	lastTargetChangeTime = 0
+	
     lastTargetChangeTime = lastTargetChangeTime + elapsed
+    timeSinceLastTargetChange = timeSinceLastTargetChange + elapsed -- Ensure this is always initialized
     if lastTargetChangeTime < updateInterval then return end
-    lastTargetChangeTime = 0
 
     local inInstance, instanceType = IsInInstance()
     local isPartyLeader = UnitIsGroupLeader("player")
@@ -113,7 +115,26 @@ local function UpdateTankMark(self, elapsed)
             MarkTankTarget()
         end
     end
-	
+
+	if not markerSet and tankTarget then
+		if initialMark and timeSinceLastTargetChange >= 1 then
+			MarkTankTarget()
+			initialMark = false -- Reset for next target
+		elseif not initialMark and timeSinceLastTargetChange >= 3 then
+			MarkTankTarget()
+		end
+	end
+
+	-- Update timeSinceLastTargetChange based on target change detection
+	if UnitGUID("target") ~= tankTarget then
+		tankTarget = UnitGUID("target")
+		markerSet = false
+		timeSinceLastTargetChange = 0 -- Reset timer for new target
+		initialMark = true -- Indicate that this is a new target for marking
+	else
+		timeSinceLastTargetChange = timeSinceLastTargetChange + elapsed -- Increment timer
+	end
+
     -- Additional checks for tank role and specialization
     if IsIn5ManDungeon() and RSI.skullMarkingEnabled then
         local isTank = UnitGroupRolesAssigned("player") == "TANK" or tContains(tankSpecIDs, GetSpecializationID("player"))
