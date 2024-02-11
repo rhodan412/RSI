@@ -8,6 +8,11 @@
 --- Initialize RSI if it doesn't exist
 RSI = RSI or {}
 
+-- Global Declarations
+local lastTargetChangeTime = 0
+local timeSinceLastTargetChange = 0
+local initialMark = true
+
 -- Initialize the enabled state from the saved variable or default to true
 if RSISkullEnabled == nil then
     RSISkullEnabled = true  -- Default state is enabled
@@ -73,7 +78,7 @@ end
 local tankTarget
 local skullMarker = 8
 local markerSet = false
-local updateInterval = 1 -- seconds, adjust as needed
+local updateInterval = 3 -- seconds, adjust as needed
 
 
 -- Define tank specialization IDs
@@ -95,57 +100,40 @@ end
 
 -- In the UpdateTankMark function
 local function UpdateTankMark(self, elapsed)
-	timeSinceLastTargetChange = 0
-	lastTargetChangeTime = 0
-	
     lastTargetChangeTime = lastTargetChangeTime + elapsed
-    timeSinceLastTargetChange = timeSinceLastTargetChange + elapsed -- Ensure this is always initialized
     if lastTargetChangeTime < updateInterval then return end
 
     local inInstance, instanceType = IsInInstance()
-    local isPartyLeader = UnitIsGroupLeader("player")
-    local inSmallGroup = IsInGroup() and GetNumGroupMembers() <= 5
+    local isPartyLeader = UnitIsGroupLeader("player") and not IsInRaid()
+    local shouldMark = RSI.skullMarkingEnabled and ((inInstance and (UnitGroupRolesAssigned("player") == "TANK" or tContains(tankSpecIDs, GetSpecializationID("player")))) or (not inInstance and isPartyLeader))
+    local groupSize = GetNumGroupMembers()
+    local inSmallGroup = IsInGroup() and groupSize >= 2 and groupSize <= 5
 
-    -- Check if outside of instances, in a small group, the skull marking is enabled, and the player is the party leader
-    if not inInstance and inSmallGroup and RSI.skullMarkingEnabled and isPartyLeader then
-        if UnitGUID("target") ~= tankTarget then
-            tankTarget = UnitGUID("target")
-            markerSet = false
-        elseif not markerSet and tankTarget then
-            MarkTankTarget()
-        end
+    -- Ensuring we reset the marker if the target changes or under specific conditions
+    if UnitGUID("target") ~= tankTarget or (shouldMark and not GetRaidTargetIndex("target") == skullMarker) then
+        tankTarget = UnitGUID("target")
+        markerSet = false
     end
 
-	if not markerSet and tankTarget then
-		if initialMark and timeSinceLastTargetChange >= 1 then
-			MarkTankTarget()
-			initialMark = false -- Reset for next target
-		elseif not initialMark and timeSinceLastTargetChange >= 3 then
-			MarkTankTarget()
-		end
-	end
+    -- Marking logic when conditions are met and marker isn't set
+    if shouldMark and not markerSet and tankTarget then
+		print("Line 115 marking")
+        MarkTankTarget()
+    end
 
-	-- Update timeSinceLastTargetChange based on target change detection
-	if UnitGUID("target") ~= tankTarget then
-		tankTarget = UnitGUID("target")
-		markerSet = false
-		timeSinceLastTargetChange = 0 -- Reset timer for new target
-		initialMark = true -- Indicate that this is a new target for marking
-	else
-		timeSinceLastTargetChange = timeSinceLastTargetChange + elapsed -- Increment timer
-	end
+    -- Additional logic for re-marking with a delay if needed
+    -- This part is especially relevant if you're looking to implement a delay before re-marking a new target
+    if not markerSet and tankTarget and timeSinceLastTargetChange >= (initialMark and 1 or 3) then
+		print("Line 123 marking")
+        MarkTankTarget()
+        initialMark = false
+    end
 
-    -- Additional checks for tank role and specialization
-    if IsIn5ManDungeon() and RSI.skullMarkingEnabled then
-        local isTank = UnitGroupRolesAssigned("player") == "TANK" or tContains(tankSpecIDs, GetSpecializationID("player"))
-        for i = 1, GetNumGroupMembers() - 1 do
-            local unit = "party" .. i
-            if isTank or (tContains(tankSpecIDs, GetSpecializationID(unit)) and UnitGroupRolesAssigned(unit) == "TANK") then
-                if UnitGUID(unit.."target") == tankTarget and not markerSet then
-                    MarkTankTarget()
-                end
-            end
-        end
+    -- Increment timeSinceLastTargetChange if the current target is already marked
+    if GetRaidTargetIndex("target") == skullMarker then
+        timeSinceLastTargetChange = timeSinceLastTargetChange + elapsed
+    else
+        timeSinceLastTargetChange = 0
     end
 end
 
