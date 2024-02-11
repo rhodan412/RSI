@@ -1,3 +1,5 @@
+1.16 - Fixed issue where player was able to mark in open world not in a group
+
 1.15 - Fix to get it working again in dungeon groups (only tank can mark), open world groups (only leader can mark) and dungeon follower groups (role tank, if player, can mark)
 
 1.1 - Tank will mark priority targets automatically in dungeons as tank role priority and secondarily as tank spec
