@@ -98,43 +98,46 @@ local function MarkTankTarget()
 end
 
 
--- In the UpdateTankMark function
+-- Function to check if player is the leader or a tank in a 5-man dungeon
+local function ShouldHandleMarking()
+    local isInstance, instanceType = IsInInstance()
+    if isInstance and instanceType == "party" then
+        -- Inside a dungeon, check if the player is in a tank spec or assigned the tank role
+        return UnitGroupRolesAssigned("player") == "TANK" or tContains(tankSpecIDs, GetSpecializationID("player"))
+    else
+        -- Outside of dungeons, check if the player is the group leader
+        return UnitIsGroupLeader("player") and not IsInRaid()
+    end
+end
+
+
+-- Updated function to incorporate role-based marking logic
 local function UpdateTankMark(self, elapsed)
     lastTargetChangeTime = lastTargetChangeTime + elapsed
     if lastTargetChangeTime < updateInterval then return end
 
-    local inInstance, instanceType = IsInInstance()
-    local isPartyLeader = UnitIsGroupLeader("player") and not IsInRaid()
-    local shouldMark = RSI.skullMarkingEnabled and ((inInstance and (UnitGroupRolesAssigned("player") == "TANK" or tContains(tankSpecIDs, GetSpecializationID("player")))) or (not inInstance and isPartyLeader))
+    local shouldMark = RSI.skullMarkingEnabled and ShouldHandleMarking()
     local groupSize = GetNumGroupMembers()
     local inSmallGroup = IsInGroup() and groupSize >= 2 and groupSize <= 5
 
-    -- Ensuring we reset the marker if the target changes or under specific conditions
+    -- Reset marker if target changes or under specific conditions
     if UnitGUID("target") ~= tankTarget or (shouldMark and not GetRaidTargetIndex("target") == skullMarker) then
         tankTarget = UnitGUID("target")
         markerSet = false
+        timeSinceLastTargetChange = 0 -- Reset this as well to handle delay correctly
     end
 
     -- Marking logic when conditions are met and marker isn't set
     if shouldMark and not markerSet and tankTarget then
-		print("Line 115 marking")
         MarkTankTarget()
     end
 
-    -- Additional logic for re-marking with a delay if needed
-    -- This part is especially relevant if you're looking to implement a delay before re-marking a new target
-    if not markerSet and tankTarget and timeSinceLastTargetChange >= (initialMark and 1 or 3) then
-		print("Line 123 marking")
-        MarkTankTarget()
-        initialMark = false
+    -- Reset initialMark after marking or a significant time has passed without marking
+    if markerSet or timeSinceLastTargetChange > 10 then
+        initialMark = true
     end
 
-    -- Increment timeSinceLastTargetChange if the current target is already marked
-    if GetRaidTargetIndex("target") == skullMarker then
-        timeSinceLastTargetChange = timeSinceLastTargetChange + elapsed
-    else
-        timeSinceLastTargetChange = 0
-    end
+    lastTargetChangeTime = 0 -- Reset lastTargetChangeTime after processing
 end
 
 

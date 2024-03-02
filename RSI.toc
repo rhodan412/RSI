@@ -2,7 +2,7 @@
 ## Title: Rhodan's Skull It
 ## Notes: Automatically marks tank's target in 5 player dungeon
 ## Author: Rhodan {Aurleis}
-## Version: 1.16
+## Version: 1.17
 ## IconTexture: Interface\AddOns\RSI\RSIjolly.tga
 
 ## SavedVariables: RSISkullEnabled
