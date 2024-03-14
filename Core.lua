@@ -78,7 +78,7 @@ end
 local tankTarget
 local skullMarker = 8
 local markerSet = false
-local updateInterval = 3 -- seconds, adjust as needed
+local updateInterval = 5 -- seconds, adjust as needed
 
 
 -- Define tank specialization IDs
