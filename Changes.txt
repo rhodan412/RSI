@@ -1,3 +1,7 @@
+1.177 - Bump version
+
+1.176 - Bump version
+
 1.175 - Changed the interval between skull mark updates
 
 1.17 - Fixed bug where both tank and partyleader were able to mark targets in dungeon group. Now in a dungeon grp, only the tank role/spec can mark a target with skull and outside of dungeon instance only party leader can mark in open world
