@@ -1,7 +1,7 @@
 Rhodan's Skull It (RSI)
 =======================
 
-Add-on that allows you to setup and quickly switch between different profiles of your action bars, talents, macros and key bindings.
+Automatically mark your target with skull if you tank in a dungeon or party leader in non-dungeon.
 
 Chat commands
 -------------
