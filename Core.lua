@@ -78,7 +78,7 @@ end
 local tankTarget
 local skullMarker = 8
 local markerSet = false
-local updateInterval = 5 -- seconds, adjust as needed
+local updateInterval = 3 -- seconds, adjust as needed
 
 
 -- Define tank specialization IDs
@@ -87,8 +87,17 @@ local tankSpecIDs = {250, 104, 581, 66, 268, 73} -- Add all tank spec IDs here
 
 -- Function for handling marking of specific target
 local function MarkTankTarget()
-	if UnitIsPlayer("target") or not UnitIsEnemy("player", "target") then
-		return -- Ensures the target is a hostile NPC
+	if UnitIsPlayer("target") then
+		return
+	end
+
+	if not (UnitCanAttack("player", "target") and not UnitIsFriend("player", "target")) then
+		return
+	end
+
+	-- Check if target is dead or ghost
+	if UnitIsDeadOrGhost("target") then
+		return
 	end
 
 	if GetRaidTargetIndex("target") ~= skullMarker then
@@ -101,12 +110,12 @@ end
 -- Function to check if player is the leader or a tank in a 5-man dungeon
 local function ShouldHandleMarking()
 	local isInstance, instanceType = IsInInstance()
+	local groupSize = GetNumGroupMembers()
+	
 	if isInstance and instanceType == "party" then
-		-- Inside a dungeon, check if the player is in a tank spec or assigned the tank role
 		return UnitGroupRolesAssigned("player") == "TANK" or tContains(tankSpecIDs, GetSpecializationID("player"))
 	else
-		-- Outside of dungeons, check if the player is the group leader
-		return UnitIsGroupLeader("player") and not IsInRaid()
+		return IsInGroup() and groupSize <= 5 and UnitIsGroupLeader("player") and not IsInRaid()
 	end
 end
 
