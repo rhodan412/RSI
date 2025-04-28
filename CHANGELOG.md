@@ -1,3 +1,12 @@
+11.1.5.1 (2025-04-28)
+
+	Core.lua
+		- Update marker functions to work with 11.1.5 and won't mark dead targets (2025.04-28)
+
+	RSI.toc
+		- Updated interface and version# (2025.04-28)
+
+
 11.1.0.1 (2025-03-01)
 
 	Core.lua
